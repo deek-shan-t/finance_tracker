@@ -6,8 +6,7 @@ import 'package:finance_app/screens/set_limit_screen.dart';
 import 'package:finance_app/screens/stats_screen.dart';
 import 'package:finance_app/screens/profile_screen.dart';
 import 'package:finance_app/widgets/expense_list.dart';
-import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
-import 'package:finance_app/widgets/home_screen_content.dart';
+import 'package:finance_app/widgets/home_screen_content.dart'; // Import the HomeScreenContent widget
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -31,9 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _buildScreens() {
     return [
-      HomeScreenContent(),
+      HomeScreenContent(), // Use the HomeScreenContent widget
       SetLimitScreen(),
-      Container(), // Placeholder for Add button
       StatsScreen(),
       ProfileScreen(),
     ];
@@ -43,45 +41,101 @@ class _HomeScreenState extends State<HomeScreen> {
     TextEditingController amountController = TextEditingController();
     TextEditingController noteController = TextEditingController();
     String selectedCategory = "Food";
-    // Implement the dialog to add expenses
+    List<String> categories = ["Food", "Transport", "Entertainment", "Other"];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Add Expense"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "Amount"),
+              ),
+              TextField(
+                controller: noteController,
+                decoration: InputDecoration(labelText: "Note"),
+              ),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                items: categories.map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue!;
+                  });
+                },
+                decoration: InputDecoration(labelText: "Category"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                // Add expense logic here
+                Navigator.of(context).pop();
+              },
+              child: Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _buildScreens()[_currentIndex],
-      bottomNavigationBar: FlashyTabBar(
-        selectedIndex: _currentIndex,
-        onItemSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          if (index == 2) {
-            Future.microtask(() => _showAddExpenseDialog(context));
-          }
-        },
-        items: [
-          FlashyTabBarItem(
-            icon: Icon(Icons.home),
-            title: Text('Home'),
-          ),
-          FlashyTabBarItem(
-            icon: Icon(Icons.settings),
-            title: Text('Settings'),
-          ),
-          FlashyTabBarItem(
-            icon: Icon(Icons.add),
-            title: Text('Add'),
-          ),
-          FlashyTabBarItem(
-            icon: Icon(Icons.bar_chart),
-            title: Text('Stats'),
-          ),
-          FlashyTabBarItem(
-            icon: Icon(Icons.person),
-            title: Text('Profile'),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddExpenseDialog(context),
+        child: Icon(Icons.add),
+        backgroundColor: Colors.blue,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: 'Settings',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart),
+              label: 'Stats',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }
