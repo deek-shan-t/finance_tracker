@@ -101,10 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _buildScreens()[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddExpenseDialog(context),
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 40.0), // Adjust the value as needed
+        child: FloatingActionButton(
+          onPressed: () => _showAddExpenseDialog(context),
+          child: Icon(Icons.add),
+          backgroundColor: Colors.blue,
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       bottomNavigationBar: BottomAppBar(
@@ -117,6 +120,9 @@ class _HomeScreenState extends State<HomeScreen> {
               _currentIndex = index;
             });
           },
+          selectedItemColor: Colors.blue, // Set the color for selected items
+          unselectedItemColor: Colors.grey, // Set the color for unselected items
+          backgroundColor: Colors.white, // Set the background color
           items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
