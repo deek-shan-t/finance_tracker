@@ -1,4 +1,4 @@
-name: finance_app
+name: budget_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -39,6 +39,7 @@ dependencies:
   provider: ^6.1.2
   flutter_local_notifications: ^18.0.1
   flashy_tab_bar2: ^0.0.10
+  shared_preferences: ^2.5.2
 
 dev_dependencies:
   flutter_test:

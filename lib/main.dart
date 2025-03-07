@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:finance_app/providers/expense_provider.dart';
-import 'package:finance_app/screens/home_screen.dart';
+import 'package:budget_app/providers/expense_provider.dart';
+import 'package:budget_app/screens/home_screen.dart';
+import 'package:budget_app/screens/set_limit_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,25 +23,23 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
           hintColor: Colors.amber,
-          textTheme: TextTheme(
+          textTheme: const TextTheme(
             bodyLarge: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             bodyMedium: TextStyle(fontSize: 16.0),
           ),
-          buttonTheme: ButtonThemeData(
+          buttonTheme: const ButtonThemeData(
             buttonColor: Colors.blue,
             textTheme: ButtonTextTheme.primary,
           ),
-          floatingActionButtonTheme: FloatingActionButtonThemeData(
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             elevation: 4.0,
-            sizeConstraints: BoxConstraints.tightFor(
-              width: 70.0,
-              height: 70.0,
-            ),
+            sizeConstraints: BoxConstraints.tightFor(width: 70.0, height: 70.0),
           ),
         ),
         home: HomeScreen(),
+        routes: {'/set-limits': (context) => SetLimitScreen()},
       ),
     );
   }

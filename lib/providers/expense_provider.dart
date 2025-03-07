@@ -1,47 +1,97 @@
 import 'package:flutter/material.dart';
-import '../database/db_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../models/expense.dart';
-import 'package:flutter/foundation.dart';
+import '../database/db_helper.dart';
 
-class ExpenseProvider extends ChangeNotifier {
+class ExpenseProvider with ChangeNotifier {
   List<Expense> _expenses = [];
-  double _dailyLimit = 200.0;
+  double _dailyLimit = 0;
+  double _weeklyLimit = 0;
+  double _monthlyLimit = 0;
+  double _todayExpenses = 0;
 
   List<Expense> get expenses => _expenses;
   double get dailyLimit => _dailyLimit;
-  double get totalExpenses =>
-      _expenses.fold(0, (sum, item) => sum + item.amount);
-  double get spendingProgress =>
-      (_dailyLimit > 0) ? (totalExpenses / _dailyLimit).clamp(0.0, 1.0) : 0.0;
+  double get weeklyLimit => _weeklyLimit;
+  double get monthlyLimit => _monthlyLimit;
+  double get todayExpenses => _todayExpenses;
 
-  Future<void> loadExpenses() async {
-    _expenses = await DBHelper.instance.getExpensesForToday();
-    notifyListeners();
+  ExpenseProvider() {
+    _loadData();
   }
 
-  Future<void> addExpense(Expense expense) async {
-    await DBHelper.instance.insertExpense(expense);
-    await loadExpenses();
-  }
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _dailyLimit = prefs.getDouble('dailyLimit') ?? 0;
+    _weeklyLimit = prefs.getDouble('weeklyLimit') ?? 0;
+    _monthlyLimit = prefs.getDouble('monthlyLimit') ?? 0;
 
-  Future<void> deleteExpense(int id) async {
-    await DBHelper.instance.deleteExpense(id);
-    await loadExpenses();
-  }
-
-  Future<void> setDailyLimit(double limit) async {
-    await DBHelper.instance.setDailyLimit(limit);
-    _dailyLimit = limit;
-    notifyListeners();
-  }
-
-  Future<void> loadDailyLimit() async {
-    double limit = await DBHelper.instance.getDailyLimit();
-    if (limit == 0) {
-      print("Daily Limit is 0, setting default to 200");
-      await setDailyLimit(200); // sets default if missing
+    String? expensesString = prefs.getString('expenses');
+    if (expensesString != null) {
+      List<dynamic> jsonList = jsonDecode(expensesString);
+      _expenses = jsonList.map((e) => Expense.fromJson(e)).toList();
     }
-    _dailyLimit = limit;
+
+    await fetchTodayExpenses();
+
     notifyListeners();
   }
+
+  Future<void> _saveLimit(String key, double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(key, value);
+  }
+
+  Future<void> _saveExpenses() async {
+    final prefs = await SharedPreferences.getInstance();
+    String expensesString = jsonEncode(_expenses.map((e) => e.toJson()).toList());
+    await prefs.setString('expenses', expensesString);
+  }
+
+  void addExpense(Expense expense) {
+    _expenses.add(expense);
+    _saveExpenses();
+    fetchTodayExpenses();
+    notifyListeners();
+  }
+
+  void deleteExpense(int id) {
+    _expenses.removeWhere((expense) => expense.id == id);
+    _saveExpenses();
+    fetchTodayExpenses();
+    notifyListeners();
+  }
+
+  void setDailyLimit(double limit) {
+    _dailyLimit = limit;
+    _saveLimit('dailyLimit', limit);
+    notifyListeners();
+  }
+
+  void setWeeklyLimit(double limit) {
+    _weeklyLimit = limit;
+    _saveLimit('weeklyLimit', limit);
+    notifyListeners();
+  }
+
+  void setMonthlyLimit(double limit) {
+    _monthlyLimit = limit;
+    _saveLimit('monthlyLimit', limit);
+    notifyListeners();
+  }
+
+  Future<void> fetchDailyLimit() async {
+    final dbHelper = DBHelper.instance;
+    _dailyLimit = await dbHelper.getDailyLimit();
+    notifyListeners();
+  }
+
+  Future<void> fetchTodayExpenses() async {
+    final dbHelper = DBHelper.instance;
+    _todayExpenses = await dbHelper.getTotalExpensesForToday();
+    notifyListeners();
+  }
+
+  double get progress => _dailyLimit > 0 ? _todayExpenses / _dailyLimit : 0.0;
 }

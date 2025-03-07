@@ -34,21 +34,28 @@ class DBHelper {
             dailyLimit REAL
           )
         ''');
-        await db.insert('settings', {'id': 1, 'dailyLimit': 200}); // Default daily limit
+        await db.insert('settings', {
+          'id': 1,
+          'dailyLimit': 200,
+        }); // Default daily limit
       },
     );
   }
 
-  Future<int> insertExpense(Expense expense) async {
+   Future<int> insertExpense(Expense expense) async {
     final db = await database;
-    return await db.insert('expenses', expense.toMap());
+    return await db.insert('expenses', expense.toJson());
   }
 
   Future<List<Expense>> getExpensesForToday() async {
     final db = await database;
     String today = DateTime.now().toIso8601String().substring(0, 10);
-    final result = await db.query('expenses', where: "date LIKE ?", whereArgs: ['$today%']);
-    return result.map((map) => Expense.fromMap(map)).toList();
+    final result = await db.query(
+      'expenses',
+      where: "date LIKE ?",
+      whereArgs: ['$today%'],
+    );
+    return result.map((map) => Expense.fromJson(map)).toList();
   }
 
   Future<int> deleteExpense(int id) async {
@@ -56,23 +63,30 @@ class DBHelper {
     return await db.delete('expenses', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> setDailyLimit(double limit) async {
+  Future<double> getTotalExpensesForToday() async {
     final db = await database;
-    await db.update('settings', {'dailyLimit': limit}, where: 'id = ?', whereArgs: [1]);
+    String today = DateTime.now().toIso8601String().substring(0, 10);
+    final result = await db.rawQuery(
+      'SELECT SUM(amount) as total FROM expenses WHERE date LIKE ?',
+      ['$today%'],
+    );
+    return (result.first['total'] as double?) ?? 0.0;
   }
 
   Future<double> getDailyLimit() async {
-  final db = await database;
-  final result = await db.query('settings', columns: ['daily_limit']);
-  
-  if (result.isNotEmpty) {
-    double limit = result.first['daily_limit'] as double;
-    print("Fetched Daily Limit from DB: $limit"); // debug print
-    return limit;
-  } else {
-    print("No Daily Limit found, returning default 200"); // debug print
-    return 200; // default limit
+    final db = await database;
+    final result = await db.query('settings', columns: ['dailyLimit']);
+    return (result.first['dailyLimit'] as double?) ?? 0.0;
+  }
+
+  Future<void> setDailyLimit(double limit) async {
+    final db = await database;
+    await db.update(
+      'settings',
+      {'dailyLimit': limit},
+      where: 'id = ?',
+      whereArgs: [1],
+    );
   }
 }
 
-}

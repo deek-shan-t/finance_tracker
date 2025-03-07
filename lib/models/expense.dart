@@ -5,9 +5,15 @@ class Expense {
   final String note;
   final DateTime date;
 
-  Expense({this.id, required this.amount, required this.category, required this.note, required this.date});
+  Expense({
+    this.id,
+    required this.amount,
+    required this.category,
+    required this.note,
+    required this.date,
+  });
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'amount': amount,
@@ -17,13 +23,13 @@ class Expense {
     };
   }
 
-  factory Expense.fromMap(Map<String, dynamic> map) {
+  factory Expense.fromJson(Map<String, dynamic> json) {
     return Expense(
-      id: map['id'],
-      amount: map['amount'],
-      category: map['category'],
-      note: map['note'],
-      date: DateTime.parse(map['date']),
+      id: json['id'],
+      amount: json['amount'],
+      category: json['category'],
+      note: json['note'],
+      date: DateTime.parse(json['date']),
     );
   }
 }
