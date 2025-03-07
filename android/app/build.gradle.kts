@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -29,16 +30,20 @@ android {
 
     buildTypes {
         release {
-            // REMOVE this if you don't have a release signing key
-            // signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true  // Enable code shrinking
+            isShrinkResources = true  // Keep resource shrinking
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
-}
-
-flutter {
-    source = "../.."
+    
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.10")
+    implementation("com.google.android.gms:play-services-auth:19.2.0")
+    implementation("com.google.firebase:firebase-analytics:20.0.2")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4") // Add this line
 }
